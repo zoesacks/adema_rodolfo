@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+{% load humanize %}
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Ticket de venta</title>
+    <style>
+        /* Estilos para eliminar decoración de la lista */
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            text-decoration: none;
+        }
+        
+        /* Estilos para ajustar tamaño de fuente y espaciado */
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            margin: 0px;
+        }
+        
+        h1 {
+            font-size: 18px;
+            margin-bottom: 0px;
+        }
+        
+        h4 {
+            font-size: 10px;
+            margin: 0;
+        }
+        
+        hr {
+            border: 1px solid #000;
+            margin: 5px 0;
+        }
+        
+        ul li {
+            font-size: 12px;
+            margin-bottom: 3px;
+        }
+        
+        p, b {
+            font-size: 12px;
+        }
+
+    </style>
+</head>
+<body >
+    {% if venta.estado == 5 %}
+    <h1 style="color: red;">FACTURA ANULADA</h1>
+    {% endif %}
+    <h1>{{ configuracion.nombre }}</h1>
+    <br>
+    
+    <h4> DIRECCION: &nbsp; {{ configuracion.direccion }}</h4>
+    <h4> TELEFONO:&nbsp; {{ configuracion.telefono }}</h4>
+    <h4> CUIT: &nbsp; {{ configuracion.cuit }}</h4>
+    <h4> CONTACTO: &nbsp; {{ configuracion.contacto }}</h4>
+
+    <hr>
+    <p style="margin-bottom: 0;">Nº Venta: {{ venta.id }}</p>  
+    <p style="margin: 0;">Cliente: {{ venta.cliente }}</p>
+    <p style="margin: 0;">Caja: {{ venta.nombre_factura }}</p>
+    <p style="margin: 0;">Fecha: {{ venta.fecha }}</p>
+
+    <hr>
+    <h2>Detalles de la Venta:</h2>
+    <ul>
+        {% for detalle in venta.detalleventa_set.all %}
+        <li>{{ detalle.producto.nombre }} | {{ detalle.producto.descripcion }}</li>
+        <li><b>Cant:</b> {{ detalle.cantidad|floatformat:0 }}</li>
+        <li><b>Precio Unit:</b> $ {{ detalle.precio|floatformat:2|intcomma }} {{ detalle.moneda }}</li>
+        <li><b>Total: </b> $ {{ detalle.get_total|floatformat:2|intcomma }}</li>
+        <hr>
+        {% endfor %}
+    </ul>
+
+    <p class="total">Total Bolivares: <b style="color: rgb(0, 0, 0); font-size: 14px;">${{ venta.get_cart_total|floatformat:2|intcomma }}</b></p>
+    <p class="total">Total Dólares: <b style="color: rgb(0, 0, 0); font-size: 14px;">${{ venta.get_cart_total_dolares|floatformat:2|intcomma }}</b></p>
+
+    <p> <b>¡Gracias por su compra!</b></p>
+</body>
+</html>

@@ -1,0 +1,152 @@
+{% extends 'core/base.html' %}
+{% load humanize %}
+{% block content %}
+
+<div class="container">
+    <div class="" style="text-align: start;">
+        <h1 class="text-light p-3" style="margin-top: 70px;"><b></b></h1>
+    </div>
+    <div class="card p-3 d-flex">   
+        
+        <div class="row justify-content-center">
+            <div class="col-8">
+                <div class="card" style="border: none;">
+                    <div class="card-body text-center">
+                        <form method="GET" action="">
+                            <div class="row">
+                                <div class="col-3">
+                                    <label for="" class="text-primary"><b>Desde</b></label>
+                                    <input type="date" id="desde" name="desde" class="form-control" value="{{ desde|date:'Y-m-d' }}">
+                                </div>
+                                <div class="col-3">
+                                    <label for="" class="text-primary"><b>Hasta</b></label>
+                                    <input type="date" id="hasta" name="hasta" class="form-control" value="{{ hasta|date:'Y-m-d'}}">
+                                </div>
+                                <div class="col-3">
+                                    <label for="" class="text-primary"><b>Entregado</b></label>
+                                    <select id="entregado" name="entregado" class="form-control">
+                                        <option value="Si">Si</option>
+                                        <option value="No">No</option>
+                                    </select>
+                                </div>
+                                <div class="col-3">
+                                    <button type="submit" class="btn btn-primary">Filtrar</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="div col-4">
+                <div class="card" style="border: none;">
+                    <div class="card-body">
+                        <!--<h4 class="text-primary">Total</h4>
+                        <h4 class="text-danger"><b>$ {{ total_rango|intcomma }}</b></h4>-->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body">
+            <div class="row justify-content-center mt-3">
+                <table class="table">
+                    <thead class="bg-primary" style="color: aliceblue;">
+                        <tr>
+                            <th scope="col"># Venta </th>
+                            <th scope="col">Fecha</th>
+                            <th scope="col">Cliente</th>
+                            <th scope="col">Cantidad de productos</th>
+                            <th scope="col">Total Pesos</th> 
+                            <th scope="col">Total Bs</th>                        
+                            <th scope="col">Total Dolar</th> 
+                            <th scope="col">Estado</th>
+                            <th scope="col">Entregado</th>
+                            <th scope="col">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for venta in venta_list %}
+                            {% if venta.detalleventa_set.all %}
+                                <tr>
+                                    <td class="text-primary"><b>    #{{ venta.pk }}</b></td>
+                                    <td>{{ venta.get_date }}</td>
+
+                                    
+                                    {% if venta.cliente == None %}
+                                    <td>Cons. Final</td>
+                                    {% else %}
+                                    <td>{{ venta.cliente }}</td>
+                                    {% endif %}
+
+                                    <td>{{ venta.get_cart_items|floatformat:0 }}</td>
+                                    <td>$ {{ venta.get_cart_total|intcomma }}</td>
+                                    <td>$ {{ venta.get_cart_total_dolares|intcomma }}</td>
+                                    <td>$ {{ venta.get_cart_total_bolivianos|intcomma }}</td>
+
+                                    {% if venta.estado == 1 %}
+                                    <td>Pagada</td>
+                                    {% endif %}
+                                    
+                                    {% if venta.estado == 2 %}
+                                    <td>Facturada</td>
+                                    {% endif %}
+                                    
+                                    {% if venta.estado == 3 %}
+                                    <td>Finalizada</td>
+                                    {% endif %}
+                                    
+                                    {% if venta.estado == 5 %}
+                                    <td>Anulada</td>
+                                    {% endif %}
+
+                                    {% if venta.entregado == True %}
+                                    <td>Entregada</td>
+                                    {% else %}
+                                    <td>Pendiente Entrega</td>
+                                    {% endif %}
+                                    <td>
+                                        {% if venta.estado != 5 %}
+                                            <a class="btn btn-danger" style="margin: 15px;" href="{% url 'venta:anular' venta.id %}">Anular</a>
+                                        {% endif %}
+                                        
+                                        <a class="btn btn-success" style="margin: 15px;"
+                                            href="{% url 'venta:imprimir_ticket' venta.id %}">Imprimir</a>
+
+                                        {% if configuracion.entrega == True %} 
+                                            {% if venta.entregado == False %}
+                                                <a class="btn btn-primary" style="margin: 15px;" href="{% url 'venta:entregar_venta' venta.id %}">Entregar</a>
+                                            {% endif %}   
+                                        {% endif %}   
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>    
+    </div>
+</div>
+
+<script>
+
+function getCurrentDateFormatted() {
+  const today = new Date();
+  const currentDateFormatted = today.toISOString().split('T')[0];
+  return currentDateFormatted;
+}
+
+function setDefaultDates() {
+  const fechaDesdeInput = document.getElementById('desde');
+  const fechaHastaInput = document.getElementById('hasta');
+
+  fechaDesdeInput.value = getCurrentDateFormatted();
+  fechaHastaInput.value = getCurrentDateFormatted();
+}
+
+// Llama a la función para configurar los valores predeterminados cuando se cargue la página
+setDefaultDates();
+
+</script>
+{% endblock %}

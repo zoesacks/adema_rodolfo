@@ -1,0 +1,320 @@
+{% extends 'core/base.html' %}
+{% load humanize %}
+{% block styles %}
+{% load static %}
+
+<link rel="stylesheet" href="{% static 'producto/css/style.css' %}">
+<!-- Coloca estos scripts al final del cuerpo de tu página -->
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.7.0/dist/js/bootstrap.bundle.min.js"></script>
+
+
+{% endblock %}
+
+{% block content %}
+<style>
+    /* Estilo para el texto emergente */
+.hover-text {
+    display: none;
+    position: absolute;
+    background-color: #ff7979;
+    padding: 5px;
+    border: 1px solid #000000;
+    border-radius: 3px;
+    margin-top: -25px; /* Ajusta la posición vertical según tus necesidades */
+    margin-left: 10px; /* Ajusta la posición horizontal según tus necesidades */
+    z-index: 1; /* Asegura que el texto esté por encima de otros elementos */
+}
+
+/* Mostrar el texto emergente en el hover */
+.btn:hover .hover-text {
+    display: inline-block;
+}
+</style>
+
+
+<div class="container">
+    <div class="" style="text-align: start;">
+        <h1 class="text-light p-3" style="margin-top: 80px;"><b></b></h1>
+    </div>
+    <div class="card p-3 d-flex">
+        <div class="card-body">
+
+            <div class="row d-flex">
+                <form class="form-inline mr-auto" action="" method="post">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="row">
+                                <div class="col-9">
+                                    <label for="search"  style="text-align: left;"><b class="text-primary">Buscar productos por nombre..</b></label>
+                                    <input name="search" class="form-control" type="text" placeholder="Buscar productos..." aria-label="Search">
+                                </div>
+                                <div class="col-3 p-4">
+                                    <button name="btnsearch" class="btn btn-success btn-rounded btn-md my-0 ml-sm-2" type="submit" >BUSCAR</button> 
+                                </div>
+                                
+                                                   
+                            </div>
+
+                        </div>
+                        <div class="col-6">
+                            
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="row">
+                {% if data.status %}
+                    {% if data.status == 'False' %}
+                        <p class="text-danger">No se pudo añadir el producto</p>
+                        Razón: <p class="text-danger" style="font-size: large; display: inline-block;">Para ingresar artículos al carrito debe crear una nueva venta.</p>
+                        {% else %}
+                        {% if data.status == 'Sin resultados' %}
+                            <p class="text-danger">Sin resultados</p>
+                        {% else %}
+                            <p class="text-success">{{ data.status }}</p>
+                        {% endif %}
+                    {% endif %}
+                {% endif %}
+
+                {% if data.error %}
+                    <p class="text-danger">
+                        {{ data.error }}
+                    </p>
+                {% endif %}
+            </div>
+            
+            <div class="row">
+                <div class="row col-12 mt-3">
+                    {% if configuracion.vista_clasica == True %}
+                        <div class="row">
+                            <!-- Vista de tarjetas -->
+                            <div class="row col-12 mt-3">
+                                {% for producto in producto_list %}
+                                <div class="col-sm-6 col-md-5 col-lg-3 py-2">
+                                    <div class="card mr-2 text-dark">
+                                        <div class="card-header bg-primary">   
+                                
+                                            <!-- Button trigger modal -->
+                                            {% if producto.stock_actual <= 0 %}
+                                                <button type="button" class="btn btn-warning btn-circle" data-toggle="modal"
+                                                    data-target="#addToCart{{ producto.id }}"><i class="fas fa-chart"></i>Añadir al carrito 
+                                                    <span class="hover-text">Producto sin stock</span>
+                                                </button>
+                                            {% else %}
+                                                <button type="button" class="btn btn-danger btn-circle" data-toggle="modal" data-target="#addToCart{{ producto.id }}">
+                                                    <i class="fas fa-cart-plus"></i>Añadir al carrito 
+                                                </button>
+                                            {% endif %}
+                                
+                                
+                                            <!-- Modal -->
+                                            <div class="modal fade" id="addToCart{{ producto.id }}" tabindex="-1" role="dialog"
+                                                aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+                                                <div class="modal-dialog modal-dialog-centered" role="document">
+                                                    <div class="modal-content">
+                                                        <form action="" method="post">
+                                
+                                                            <div class="modal-header">
+                                                                <h5 class="modal-title text-primary" id="exampleModalLongTitle">Añadir a
+                                                                    carrito: {{ producto.nombre }}</h5>
+                                                                <button type="button" class="close" data-dismiss="modal"
+                                                                        aria-label="Close">
+                                                                    <span aria-hidden="true">&times;</span>
+                                                                </button>
+                                                            </div>
+                                
+                                                            <div class="modal-body">
+                                                                {% csrf_token %}
+                                
+                                                                <input type="hidden" name="id_producto" id="id_producto"
+                                                                    value="{{ producto.id }}">
+                                                                <label class="text-primary"  for="cantidad">Cantidad</label>
+                                
+                                                                <input required name="cantidad" id="cantidad" type="number"
+                                                                    class="form-control"
+                                                                    step=".01"
+                                                                    min="1"
+                                                                    max="{{ producto.stock_actual }}" value="1">
+                                                                <label class="text-primary" for="moneda">Moneda</label>
+                                                                
+                                                                <select name="moneda" id="moneda" class="form-control">
+                                                                    <option value="Pesos">Bolivares</option>
+                                                                    <option value="Dolares">Dolares</option>
+                                                                
+                                                                </select> 
+                                                            </div>
+                                
+                                                            <div class="modal-footer">
+                                                                <button type="submit" class="btn btn-primary btn-block">Añadir</button>
+                                                            </div>
+                                
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                    </div>        
+                                        
+                                        <div class="card-body">
+                                            {% if producto.imagen %}
+                                                <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}" class="img-fluid" style="height: 200px;">
+                                            {% else %}
+                                                <img src="{% static 'producto/placeholder.png' %}" alt="Imagen no disponible" class="img-fluid" style="height: 200px;">
+                                            {% endif %}
+                                        
+                                            <hr>
+                                            <b class="text-primary" style="font-size: x-large;"><p class="card-title">
+                                                {{ producto.nombre }}
+                                            </p></b>
+                                            <p class="card-text">
+                                
+                                                {{ producto.descripcion }}
+                                            </p>
+                                            <hr>
+                                            <b><p class="mb-2 text-danger" style="font-size: x-large;"></b>BS $ </b>{{ producto.precio|intcomma }}</p>
+                                            <b><p class="mb-2 text-danger" style="font-size: x-medium;">USD </b> {{ producto.precio_usd|intcomma }}</p>
+                                            
+                                
+                                        </div>
+                                
+                                        <div class="card-footer bg-transparent">
+                                            <div class="row">
+                                                <div class="col">
+                                                    En stock:
+                                                    <br>
+                                                    {% if producto.stock_actual >= 0 %}
+                                                    <b class="text-danger">{{ producto.stock_actual }}</b>
+                                                    {% else %}
+                                                    <b class="text-warning">{{ producto.stock_actual }}</b>
+                                                    {% endif %}
+                                                </div>
+                                                <div class="col">
+                                                    Categoría:
+                                                    <br>
+                                                    <b class="text-success">{{ producto.categoria|default:'Sin categoría' }}</b>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="row">
+
+                            <!-- Vista de tabla -->
+                            <table class="table mt-3">
+                                <thead class="bg-primary">
+                                    <tr>
+                                        <th scope="col" class="text-light">Nombre</th>
+                                        <th scope="col" class="text-light">Descripción</th>
+                                        <th scope="col" class="text-light">Precio (BS)</th>
+                                        <th scope="col" class="text-light">Precio (USD)</th>
+                                        
+                                        <th scope="col" class="text-light">En stock</th>
+                                        <th scope="col" class="text-light">Categoría</th>
+                                        <th scope="col" class="text-light">Acciones</th>
+                                        
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for producto in producto_list %}
+                                        <tr>
+                                            <td>{{ producto.nombre }}</td>
+                                            <td>{{ producto.descripcion }}</td>
+                                            <td>{{ producto.precio|intcomma }}</td>
+                                            <td>{{ producto.precio_usd|intcomma }}</td>
+                                            
+                                            <td>
+                                                {% if producto.stock_actual >= 0 %}
+                                                    <span class="text-success">{{ producto.stock_actual }}</span>
+                                                {% else %}
+                                                    <span class="text-danger">{{ producto.stock_actual }}</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ producto.categoria|default:'Sin categoría' }}</td>
+                                            <td>
+                                                
+                                                <!-- Button trigger modal -->
+                                                {% if producto.stock_actual <= 0 %}
+                                                    <button type="button" class="btn btn-warning btn-circle" data-toggle="modal"
+                                                        data-target="#addToCart{{ producto.id }}"><i class="fas fa-chart"></i>&nbsp; Añadir
+                                                        <span class="hover-text">Producto sin stock</span>
+                                                    </button>
+                                                {% else %}
+                                                    <button type="button" class="btn btn-danger btn-circle" data-toggle="modal" data-target="#addToCart{{ producto.id }}">
+                                                        <i class="fas fa-cart-plus"></i>&nbsp; Añadir 
+                                                        
+                                                    </button>
+                                                {% endif %}
+
+                                                <!-- Modal -->
+                                            <div class="modal fade" id="addToCart{{ producto.id }}" tabindex="-1" role="dialog"
+                                                aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+                                                <div class="modal-dialog modal-dialog-centered" role="document">
+                                                    <div class="modal-content">
+                                                        <form action="" method="post">
+                                
+                                                            <div class="modal-header">
+                                                                <h5 class="modal-title text-primary" id="exampleModalLongTitle">Añadir a
+                                                                    carrito: {{ producto.nombre }}</h5>
+                                                                <button type="button" class="close" data-dismiss="modal"
+                                                                        aria-label="Close">
+                                                                    <span aria-hidden="true">&times;</span>
+                                                                </button>
+                                                            </div>
+                                
+                                                            <div class="modal-body">
+                                                                {% csrf_token %}
+                                
+                                                                <input type="hidden" name="id_producto" id="id_producto"
+                                                                    value="{{ producto.id }}">
+                                                                <label class="text-primary"  for="cantidad">Cantidad</label>
+                                
+                                                                <input required name="cantidad" id="cantidad" type="number"
+                                                                    class="form-control"
+                                                                    step=".01"
+                                                                    min="1"
+                                                                    max="{{ producto.stock_calculado }}" value="1">
+                                                                <label class="text-primary" for="moneda">Moneda</label>
+                                                                
+                                                                <select name="moneda" id="moneda" class="form-control">
+                                                                    <option value="Pesos">Bolivares</option>
+                                                                    <option value="Dolares">Dolares</option>
+                                                                    
+                                                                </select> 
+                                                            </div>
+                                
+                                                            <div class="modal-footer">
+                                                                <button type="submit" class="btn btn-primary btn-block">Añadir</button>
+                                                            </div>
+                                
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                                <!-- Puedes agregar más botones según sea necesario -->
+                                            </td>
+                                            <!-- Agrega más celdas según sea necesario -->
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+
+                        </div>
+                    {% endif %}
+                        
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}
+
+
